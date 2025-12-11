@@ -3,11 +3,15 @@
 public class PresignedUploadResult
 {
     public string UploadUrl { get; }
-    public string FileUrl { get; }
+    public string FinalUrl { get; }
 
-    public PresignedUploadResult(string uploadUrl, string fileUrl)
+    public DateTime ExpiresAt { get; }
+
+    public PresignedUploadResult(string uploadUrl, string finalUrl, DateTime expiresAt)
     {
         UploadUrl = uploadUrl;
-        FileUrl = fileUrl;
+        FinalUrl = finalUrl;
+        ExpiresAt = expiresAt;
     }
 }
+

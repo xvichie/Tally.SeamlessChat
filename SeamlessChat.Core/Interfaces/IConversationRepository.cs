@@ -12,4 +12,6 @@ public interface IConversationRepository
         string conversationId,
         string? lastMessageText,
         DateTime lastMessageAt);
+
+    Task<List<Conversation>> GetUserInboxAsync(Guid userId, int limit);
 }

@@ -3,23 +3,27 @@
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using SeamlessChat.Core.Settings;
 
-public static class ChatDatabaseSetupExtensions
+public class ChatDatabaseInitializer
 {
-    private const string DefaultTableName = "SeamlessChat";
+    private readonly string _tableName;
+    private readonly IAmazonDynamoDB _amazonDynamoDB;
 
-    public static async Task SetupChatDatabaseAsync(this IServiceProvider services, string? tableName = null)
+    public ChatDatabaseInitializer(IOptions<DynamoSettings> options, IAmazonDynamoDB amazonDynamoDB)
     {
-        tableName ??= DefaultTableName;
+        _tableName = options.Value.TableName;
+        _amazonDynamoDB = amazonDynamoDB;
+    }
 
-        using var scope = services.CreateScope();
-        var dynamo = scope.ServiceProvider.GetRequiredService<IAmazonDynamoDB>();
+    public async Task SetupChatDatabaseAsync(string? tableName = null)
+    {
+        tableName ??= _tableName;
 
-        // 1) Check if exists
-        if (await TableExists(dynamo, tableName))
+        if (await TableExists(_amazonDynamoDB, tableName))
             return;
 
-        // 2) Create table
         var request = new CreateTableRequest
         {
             TableName = tableName,
@@ -30,7 +34,6 @@ public static class ChatDatabaseSetupExtensions
                 new AttributeDefinition("PK", ScalarAttributeType.S),
                 new AttributeDefinition("SK", ScalarAttributeType.S),
 
-                // GSI attributes
                 new AttributeDefinition("GSI1PK", ScalarAttributeType.S),
                 new AttributeDefinition("GSI1SK", ScalarAttributeType.N)
             },
@@ -58,10 +61,10 @@ public static class ChatDatabaseSetupExtensions
 
 
 
-        await dynamo.CreateTableAsync(request);
+        await _amazonDynamoDB.CreateTableAsync(request);
 
         // 3) Wait until table becomes active
-        await WaitForTableActivation(dynamo, tableName);
+        await WaitForTableActivation(_amazonDynamoDB, tableName);
     }
 
 

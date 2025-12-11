@@ -2,7 +2,7 @@
 
 namespace SeamlessChat.Core.Dtos;
 
-public class UploadMediaRequestDto
+public class PresignMediaRequestDto
 {
     public MediaType MediaType { get; set; }
     public string FileName { get; set; } = default!;

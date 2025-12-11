@@ -1,4 +1,5 @@
-﻿using SeamlessChat.Core.Entities;
+﻿using SeamlessChat.Core.Dtos;
+using SeamlessChat.Core.Entities;
 using SeamlessChat.Core.Interfaces;
 
 namespace SeamlessChat.Core.Services;
@@ -50,4 +51,21 @@ public class ConversationService : IConversationService
             lastMessageAt
         );
     }
+
+    public async Task<List<ConversationPreviewDto>> GetInboxAsync(Guid userId, int limit)
+    {
+        var items = await _conversationRepository.GetUserInboxAsync(userId, limit);
+
+        return items
+            .Select(c => new ConversationPreviewDto
+            {
+                ConversationId = c.ConversationId,
+                User1Id = c.User1.UserId,
+                User2Id = c.User2.UserId,
+                LastMessageText = c.LastMessageText,
+                LastMessageAt = c.LastMessageAt
+            })
+            .ToList();
+    }
+
 }
